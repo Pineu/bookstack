@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  bookstack:
+    image: lscr.io/linuxserver/bookstack:latest
+    container_name: bookstack
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TIMEZONE:-Europe/Madrid}
+      - APP_URL=${APP_URL}
+      - APP_KEY=${APP_KEY}
+      - APP_LANG=${APP_LANG:-ca}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - DB_HOST=bookstack_db
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - bookstack_data:/config
+    ports:
+      - ${BOOKSTACK_PORT}:80
+    restart: unless-stopped
+    depends_on:
+      - bookstack_db
+
+  bookstack_db:
+    image: mysql:8.0
+    container_name: bookstack_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  bookstack_data:
+    driver: local
+  mysql_data:
+    driver: local
